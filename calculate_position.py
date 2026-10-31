@@ -3,9 +3,12 @@ Contains functions to calculate current and next positions of Toddler Bot,
 and how to get from one position to the next.
 """
 
-from math import pow, sqrt, sin, cos
+from math import sqrt, sin, cos
 from numpy import arctan2, array
 from numpy.linalg import lstsq
+from scipy.constants import g as g_m
+from sympy import Symbol, diff, nsolve, sin as symsin, cos as symcos
+
 
 def calculate_current_lengths(theta_l, theta_r, phi):
     """
@@ -26,15 +29,14 @@ def calculate_current_lengths(theta_l, theta_r, phi):
     w = 157.48  # mm
     h = 40.64  # mm
     x_end = 2000  # mm
-    winch_to_marker_dist = sqrt(pow(h,2) + pow(w,2)/4)  # mm
-    winch_to_marker_angle = arctan2(h, w/2)  # rads
 
-    # calculate string lengths
+    # calculate and return string lengths
     A = array([[-sin(theta_l), sin(theta_r)],
                [cos(theta_l), cos(theta_r)]])
     b = array([[w*sin(phi)],
               [x_end - w*cos(phi)]])
     return lstsq(A, b)[0]
+
 
 def calculate_next_position(x, y):
     """
@@ -48,3 +50,55 @@ def calculate_next_position(x, y):
     Returns:
         (numpy.ndarray): Final string lengths, in mm, in a 2x1 array. Left then right.
     """
+    # define constants
+    g = g_m * 10**3  # mm/s^2
+    k = 100  # N/mm
+    m = 1  # kg
+    w = 157.48  # mm
+    h = 40.64  # mm
+    x_end = 2000  # mm
+    y_end = 2000  # mm
+    winch_to_marker_dist = sqrt(h**2 + w**2/4)  # mm
+    winch_to_marker_angle = arctan2(h, w/2)  # rads
+
+    # define symbolic position expressions
+    phi = Symbol('phi', real=True)
+    x_l = x - symcos(phi + winch_to_marker_angle)*winch_to_marker_dist
+    y_l = y + symsin(phi + winch_to_marker_angle)*winch_to_marker_dist
+    x_r = x_l + w*symcos(phi)
+    y_r = y_l - w*symsin(phi)
+
+    # define symbolic potential energy expressions
+    PE_x = k*0.5*(x_l**2 + (x_end - x_r)**2)
+    PE_y = k*0.5*((y_l + y_end)**2 + (y_r + y_end)**2) - m*g*(y_l + y_r + 2*y_end)
+    PE_sum = PE_x + PE_y
+
+    # define and find root of derivative of potential energy with respect to phi
+    dPE = diff(PE_sum, phi)
+    tilt = nsolve(dPE, phi, 0)
+
+    # substitute tilt into other position expressions
+    x_l_real = x_l.subs(phi, tilt)
+    x_r_real = x_r.subs(phi, tilt)
+    y_l_real = y_l.subs(phi, tilt)
+    y_r_real = y_r.subs(phi, tilt)
+
+    # calculate and return string lengths
+    s_l = sqrt(x_l_real**2 + y_l_real**2)
+    s_r = sqrt((x_end - x_r_real)**2 + y_r_real**2)
+    return array([[s_l], [s_r]])
+
+
+def calculate_position_difference(s_initial, s_final):
+    """
+    Calculates the difference in string lengths between two points
+
+    Args:
+        s_initial (numpy.ndarray): String lengths at initial position, in mm, in a 2x1 array.
+
+        s_final (numpy.ndarray): String lengths at final position, in mm, in a 2x1 array.
+
+    Returns:
+        (numpy.ndarray): Differences in string lengths between final and initial positions.
+    """
+    return s_final - s_initial
