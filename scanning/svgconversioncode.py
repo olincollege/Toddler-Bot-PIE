@@ -38,7 +38,7 @@ def points_from_doc(doc, density=5, scale=1, offset=0):
     return points
 
 
-string = Path("C:\Users\maria\Downloads\add-circle-svgrepo-com.svg").read_text(encoding="utf-8")
+string = Path("add-circle-svgrepo-com.svg").read_text(encoding="utf-8")
 
 doc = minidom.parseString(string)
 points = points_from_doc(doc, density=1, scale=5, offset=(0, 5))
