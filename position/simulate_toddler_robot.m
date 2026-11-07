@@ -1,10 +1,18 @@
 function simulate_toddler_robot()
-    s_initial = calculate_current_position(pi/6, pi/6, 0);
+    figure;
+    s_initial = calculate_current_position(pi/6, pi/6, 0, true); hold on
     s_final = calculate_next_position(1900, -600);
+    axis equal
     s_diff = s_final - s_initial
+    s_error = calculate_position_error(pi/720)
 end
 
-function s = calculate_current_position(theta_l, theta_r, phi)
+function s = calculate_current_position(theta_l, theta_r, phi, showError)
+    % set default val for showError
+    if nargin == 3
+        showError = false;
+    end
+
     % define constants
     w = 157.48;
     h = 40.64;
@@ -28,10 +36,14 @@ function s = calculate_current_position(theta_l, theta_r, phi)
     % plot positions
     x_r = x_end - s(2)*cos(theta_r);
     y_r = -s(2)*sin(theta_r);
-    figure;
     plot([0, x_end, x_l, x_r, x], [0, 0, y_l, y_r, y], 'r.', MarkerSize=10); hold on;
     plot([0, x_l], [0, y_l], 'r')
     plot([x_end, x_r], [0, y_r], 'r')
+    if (showError)
+        drawOval(x_l, y_l, 10, 5)
+        drawOval(x_r, y_r, 10, 5)
+        drawOval(x, y, 10, 5)
+    end
     axis([0, 2000, -2000, 0])
 end
 
@@ -74,9 +86,28 @@ function s = calculate_next_position(x, y)
     s = double([s_l; s_r]);
 
     % plot results
-    figure;
     plot([0, x_end, x_l_real, x_r_real, x], [0, 0, y_l_real, y_r_real, y], 'r.', MarkerSize=10); hold on;
     plot([0, x_l_real], [0, y_l_real], 'r')
     plot([x_end, x_r_real], [0, y_r_real], 'r')
     axis([0, 2000, -2000, 0]) 
+end
+
+function s_error = calculate_position_error(error)
+    figure
+    s_actual = calculate_current_position(pi/6, pi/6, 0);
+    s_pp = calculate_current_position(pi/6+error, pi/6+error, 0); hold on
+    s_pm = calculate_current_position(pi/6+error, pi/6-error, 0);
+    s_mp = calculate_current_position(pi/6-error, pi/6+error, 0);
+    s_mm = calculate_current_position(pi/6-error, pi/6-error, 0);
+    axis equal
+
+    s_vals = [s_actual s_pp s_pm s_mp s_mm];
+    s_error = (max(s_vals,[],2) - min(s_vals,[],2))./2;
+end
+
+function drawOval(xc, yc, xe, ye)
+    th = 0:pi/50:2*pi;
+    xunit = xe*cos(th) + xc;
+    yunit = ye*sin(th) + yc;
+    plot(xunit, yunit, 'b');
 end
