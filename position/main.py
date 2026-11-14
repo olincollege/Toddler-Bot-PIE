@@ -5,11 +5,15 @@ Main file to run other functions
 from math import pi
 from calculate_position import *
 import time
-from IMU import *
+from I2cSensors import Sensors
 
-imu = IMU()
+sens = Sensors() # initalize the class or i get errors there is probably a better way to do this
+
+#imu = Sensors.IMU()
+encoders = sens.Encoders()
 while True:
-    print(imu.readTilt())
+    #print(imu())
+    print(encoders)
     time.sleep(0.1)
 
 
