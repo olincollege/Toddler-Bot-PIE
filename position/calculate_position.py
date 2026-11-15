@@ -22,7 +22,7 @@ def calculate_current_lengths(theta_l, theta_r, phi):
         phi (double): Tilt angle, in radians. Positive represents a clockwise tilt.
     
     Returns:
-        (numpy.ndarray): String lengths, in mm, in a 2x1 array. Left then right.
+        (tuple): String lengths, in mm, in a 2-element tuple. Left then right.
 
     """
     # define constants
@@ -35,7 +35,7 @@ def calculate_current_lengths(theta_l, theta_r, phi):
                [cos(theta_l), cos(theta_r)]])
     b = array([[w*sin(phi)],
               [x_end - w*cos(phi)]])
-    return lstsq(A, b)[0]
+    return tuple(lstsq(A, b)[0].transpose().tolist()[0])
 
 
 def calculate_next_position(x, y):
@@ -48,7 +48,7 @@ def calculate_next_position(x, y):
         y (double): Final y position of marker.
 
     Returns:
-        (numpy.ndarray): Final string lengths, in mm, in a 2x1 array. Left then right.
+        (tuple): Final string lengths, in mm, in a 2-element tuple. Left then right.
     """
     # define constants
     g = g_m * 10**3  # mm/s^2
@@ -86,7 +86,7 @@ def calculate_next_position(x, y):
     # calculate and return string lengths
     s_l = sqrt(x_l_real**2 + y_l_real**2)
     s_r = sqrt((x_end - x_r_real)**2 + y_r_real**2)
-    return array([[s_l], [s_r]])
+    return s_l, s_r
 
 
 def calculate_position_difference(s_initial, s_final):
@@ -94,11 +94,13 @@ def calculate_position_difference(s_initial, s_final):
     Calculates the difference in string lengths between two points
 
     Args:
-        s_initial (numpy.ndarray): String lengths at initial position, in mm, in a 2x1 array.
+        s_initial (tuple): String lengths at initial position, in mm, in a 2-element tuple.
 
-        s_final (numpy.ndarray): String lengths at final position, in mm, in a 2x1 array.
+        s_final (tuple): String lengths at final position, in mm, in a 2-element tuple.
 
     Returns:
-        (numpy.ndarray): Differences in string lengths between final and initial positions.
+        (tuple): Differences in string lengths between final and initial positions.
     """
-    return s_final - s_initial
+    x_diff = s_final[0] - s_initial[0]
+    y_diff = s_final[1] - s_initial[1]
+    return x_diff, y_diff
