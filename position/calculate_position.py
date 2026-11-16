@@ -5,12 +5,12 @@ and how to get from one position to the next.
 
 from math import sqrt, sin, cos
 from numpy import arctan2, array
-from numpy.linalg import lstsq
+from numpy.linalg import lstsq, norm
 from scipy.constants import g as g_m
 from sympy import Symbol, diff, nsolve, sin as symsin, cos as symcos
 
 
-def calculate_current_lengths(theta_l, theta_r, phi):
+def calculate_current_position(theta_l, theta_r, phi):
     """
     Uses string angles and tilt to calculate the string lengths at the bot's current position.
 
@@ -22,20 +22,32 @@ def calculate_current_lengths(theta_l, theta_r, phi):
         phi (double): Tilt angle, in radians. Positive represents a clockwise tilt.
     
     Returns:
-        (tuple): String lengths, in mm, in a 2-element tuple. Left then right.
+        (tuple): Tuple of tuples. One has string lengths in mm, the other has the marker coordinates.
 
     """
     # define constants
     w = 157.48  # mm
     h = 40.64  # mm
     x_end = 2000  # mm
+    winch_to_marker_dist = sqrt(h^2 + w^2/4)
+    winch_to_marker_angle = arctan2(h, w/2)
 
-    # calculate and return string lengths
+    # calculate string lengths
     A = array([[-sin(theta_l), sin(theta_r)],
                [cos(theta_l), cos(theta_r)]])
     b = array([[w*sin(phi)],
               [x_end - w*cos(phi)]])
-    return tuple(lstsq(A, b)[0].transpose().tolist()[0])
+    s = lstsq(A, b)[0]
+
+    # calculate left winch position
+    x_l = s[0][0]*cos(theta_l)
+    y_l = -s[0][0]*sin(theta_l)
+
+    # calculate marker position
+    x = x_l + cos(phi + winch_to_marker_angle)*winch_to_marker_dist
+    y = y_l - sin(phi + winch_to_marker_angle)*winch_to_marker_dist
+
+    return tuple(s.transpose().tolist()[0]), (x_l, y_l)
 
 
 def calculate_next_position(x, y):
@@ -104,3 +116,17 @@ def calculate_position_difference(s_initial, s_final):
     x_diff = s_final[0] - s_initial[0]
     y_diff = s_final[1] - s_initial[1]
     return x_diff, y_diff
+
+
+def split_points_list(diff, length=5.0):
+    """
+    returns list of points with much smaller distances
+    """
+    steps = max(diff)//length
+    if diff[0] < 0.5*steps:
+        diff = (0, diff[1])
+    if diff[1] < 0.5*steps:
+        diff = (diff[0], 0)
+    dx = diff[0]/steps
+    dy = diff[1]/steps
+    return (dx, dy), steps
