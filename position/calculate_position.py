@@ -118,15 +118,44 @@ def calculate_position_difference(s_initial, s_final):
     return x_diff, y_diff
 
 
-def split_points_list(diff, length=5.0):
+def split_points_list(dist, length=5.0):
     """
     returns list of points with much smaller distances
     """
-    steps = max(diff)//length
-    if diff[0] < 0.5*steps:
-        diff = (0, diff[1])
-    if diff[1] < 0.5*steps:
-        diff = (diff[0], 0)
-    dx = diff[0]/steps
-    dy = diff[1]/steps
-    return (dx, dy), steps
+    abs_dist = (abs(dist[0]), abs(dist[1]))
+    steps = max(abs_dist)//length
+    diffs = []
+    sums = [0.0, 0.0]
+    dx = max(abs(abs_dist[0]/steps), 0.5)
+    dy = max(abs(abs_dist[1]/steps), 0.5)
+
+    for _ in range(int(steps)):
+        if sums[0]+dx >= abs_dist[0] and sums[1]+dy >= abs_dist[1]:
+            diffs.append((abs_dist[0]-sums[0], abs_dist[1]-sums[1]))
+            break
+        elif sums[0]+dx >= abs_dist[0]:
+            diffs.append((abs_dist[0]-sums[0], dy))
+            while sums[1]+dy < abs_dist[1]:
+                diffs.append((0, dy))
+                sums[1] += dy
+            diffs.append((0, abs_dist[1]-sums[1]))
+            break
+        elif sums[1]+dy >= abs_dist[1]:
+            diffs.append((dx, abs_dist[1]-sums[1]))
+            while sums[1]+dy < abs_dist[1]:
+                diffs.append((dx, 0))
+                sums[0] += dx
+            diffs.append((abs_dist[0]-sums[0], 0))
+            break
+
+        diffs.append((dx, dy))
+        sums[0] += dx
+        sums[1] += dy
+
+    if dist[0] < 0 and dist[1] < 0:
+        return [(-diff[0], -diff[1]) for diff in diffs]
+    if dist[0] < 0:
+        return [(-diff[0], diff[1]) for diff in diffs]
+    if dist[1] < 0:
+        return [(diff[0], -diff[1]) for diff in diffs]
+    return diffs

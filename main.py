@@ -32,8 +32,13 @@ def write_short_strokes(length):
 
     for point in points:
         next_lengths = calculate_next_position(*point[:2])
-        diff_lengths = calculate_position_difference(current_lengths, next_lengths)
-        change, steps = split_points_list(diff_lengths, 0.5)
-        for _ in steps:
+        dist = calculate_position_difference(current_lengths, next_lengths)
+        diff = split_points_list(dist, 0.5)
+        for _ in range(len(diff)):
             pass # move motors
         current_lengths = next_lengths
+
+
+dist = (-10.0, 5.5)
+diff = split_points_list(dist, 1)
+print(diff)
