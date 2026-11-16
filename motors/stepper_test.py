@@ -18,40 +18,23 @@ Wire push button: VCC - PB Pin 1, GPIO 17 - PB Pin 2.
 import sys
 import time
 from RpiMotorLib import RpiMotorLib
-from RpiMotorLib.rpi_emergency_stop import EmergencyStop
 
 # Declare an named instance of class pass a name and type of motor
 # type of motor(Nema) is case sensitive
 mymotortest = RpiMotorLib.BYJMotor("MyMotorOne", "Nema")
 
-# Emergency stop on GPIO 17
-estop = EmergencyStop(gpio_pin=17, stop_callable=mymotortest.motor_stop, verbose=True)
 
 def main():
     """main function loop"""
-    estop.enable()
     # ====== tests for motor L298STepTest ====
     # Connect GPIO to [IN1 , IN2 , IN3 ,IN4] on Motor PCB
-    gpio_pins= [1, 7, 8, 25]
+    gpio_pins_1 = [6, 13, 19, 26]
+    gpio_pins_2 = [12, 16, 20, 21]
 
     #Arguments  for motor run function
     #(GPIOPins, stepdelay, steps, counterclockwise, verbose, steptype, initdelay)
-    input("Press <Enter> to continue Test1")
-    mymotortest.motor_run(gpio_pins,.5, 20, False, True,"full" ,1 )
-    time.sleep(1)
-    input("Press <Enter> to continue  Test2")
-    mymotortest.motor_run(gpio_pins,.1, 20 , False, True,"wave", 1)
-    time.sleep(1)
-    input("Press <Enter> to continue  Test3")
-    mymotortest.motor_run(gpio_pins,.2, 10, False, True,"full", 1)
-    time.sleep(1)
-    input("Press <Enter> to continue  Test4")
-    mymotortest.motor_run(gpio_pins,.05, 25, True, True,"half", 1)
-    time.sleep(1)
-    input("Press <Enter> to continue  Test5")
-    mymotortest.motor_run(gpio_pins,.02,25,False,False,"half", 3)
-
-    estop.cleanup()
+    mymotortest.motor_run(gpio_pins_1,.01, 50, True, False,"full", 0)
+    mymotortest.motor_run(gpio_pins_2,.01, 50, True, False,"full", 0)
 
 # ===================MAIN===============================
 
