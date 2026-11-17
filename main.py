@@ -29,7 +29,7 @@ def write_long_strokes():
 
 def write_short_strokes(length, motors):
     points = [(914.0, -400.0, 0), (914.0, -600.0, 1), (445.0, -488.0, 1), (1340.0, -643.0, 1)]
-    current_lengths = (915.0, 915.0)
+    current_lengths = (1035.0, 995.0)
 
     for point in points:
         next_lengths = calculate_next_position(*point[:2])
