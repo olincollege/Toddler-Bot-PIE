@@ -37,10 +37,9 @@ def write_short_strokes(length, motors):
         diff = split_points_list(dist, length)
         for d in diff:
             print(f"left: {d[0]}, right: {d[1]}")
-            motors[0].move(d[0])
-            motors[1].move(d[1])
+            motors.move(d)
         current_lengths = next_lengths
 
 
-motors = (MoveMotors((1, 0)), MoveMotors((0, 1)))
+motors = MoveMotors((1, 0))
 write_short_strokes(5.0, motors)
