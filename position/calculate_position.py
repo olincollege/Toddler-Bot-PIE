@@ -28,7 +28,7 @@ def calculate_current_position(theta_l, theta_r, phi):
     # define constants
     w = 157.48  # mm
     h = 40.64  # mm
-    x_end = 2000  # mm
+    x_end = 1829  # mm
     winch_to_marker_dist = sqrt(h^2 + w^2/4)
     winch_to_marker_angle = arctan2(h, w/2)
 
@@ -65,10 +65,10 @@ def calculate_next_position(x, y):
     # define constants
     g = g_m * 10**3  # mm/s^2
     k = 100  # N/mm
-    m = 1  # kg
+    m = 0.25  # kg
     w = 157.48  # mm
     h = 40.64  # mm
-    x_end = 2000  # mm
+    x_end = 1829  # mm
     y_end = 2000  # mm
     winch_to_marker_dist = sqrt(h**2 + w**2/4)  # mm
     winch_to_marker_angle = arctan2(h, w/2)  # rads
