@@ -25,7 +25,7 @@ from numpy import pi
 mymotortest = RpiMotorLib.BYJMotor("MyMotorOne", "Nema")
 
 
-class move_motors:
+class MoveMotors:
     def __init__(self, motor_side):
         self.motor = RpiMotorLib.BYJMotor("Motor", "Nema")
         if motor_side == (1, 0):

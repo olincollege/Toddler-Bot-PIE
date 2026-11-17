@@ -1,5 +1,6 @@
 from numpy import array
 from position.calculate_position import *
+from motors.stepper_test import MoveMotors
 
 # scan SVG for image
 
@@ -26,19 +27,20 @@ def write_long_strokes():
         # move motors to pull string by diff_length
         current_lengths = next_lengths
 
-def write_short_strokes(length):
+def write_short_strokes(length, motors):
     points = [(914.0, -400.0, 0), (914.0, -600.0, 1), (445.0, -488.0, 1), (1340.0, -643.0, 1)]
     current_lengths = (915.0, 915.0)
 
     for point in points:
         next_lengths = calculate_next_position(*point[:2])
         dist = calculate_position_difference(current_lengths, next_lengths)
-        diff = split_points_list(dist, 0.5)
-        for _ in range(len(diff)):
-            pass # move motors
+        diff = split_points_list(dist, length)
+        for d in diff:
+            print(f"left: {d[0]}, right: {d[1]}")
+            motors[0].move(d[0])
+            motors[1].move(d[1])
         current_lengths = next_lengths
 
 
-dist = (-10.0, 5.5)
-diff = split_points_list(dist, 1)
-print(diff)
+motors = (MoveMotors((1, 0)), MoveMotors((0, 1)))
+write_short_strokes(5.0, motors)

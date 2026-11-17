@@ -142,7 +142,7 @@ def split_points_list(dist, length=5.0):
             break
         elif sums[1]+dy >= abs_dist[1]:
             diffs.append((dx, abs_dist[1]-sums[1]))
-            while sums[1]+dy < abs_dist[1]:
+            while sums[0]+dx < abs_dist[0]:
                 diffs.append((dx, 0))
                 sums[0] += dx
             diffs.append((abs_dist[0]-sums[0], 0))
