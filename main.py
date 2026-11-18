@@ -1,5 +1,6 @@
 from numpy import array
 from position.calculate_position import *
+from matplotlib import pyplot as plt
 from motors.stepper_test import MoveMotors
 
 # scan SVG for image
@@ -34,17 +35,47 @@ def write_short_strokes(length, motors):
     for point in points:
         next_lengths = calculate_next_position(*point[:2])
         dist = calculate_position_difference(current_lengths, next_lengths)
-        diff = split_points_list(dist, length)
+        diff = split_lengths_list(dist, length)
         for d in diff:
             print(f"left: {d[0]}, right: {d[1]}")
             motors.move(d)
         current_lengths = next_lengths
 
     return_dist = calculate_position_difference(current_lengths, (1035.0, 995.0))
-    return_diff = split_points_list(return_dist, length)
+    return_diff = split_lengths_list(return_dist, length)
     for d in return_diff:
         print(f"left: {d[0]}, right: {d[1]}")
         motors.move(d)
 
-motors = MoveMotors((1, 0))
-write_short_strokes(2.0, motors)
+
+def draw_with_subpoints(motors, points, dist):
+    """
+    draw by linearly spacing points
+    """
+
+    subpoints = []
+    for i in range(len(points)-1):
+        subpoints += space_points_linearly(points[i], points[i+1], dist)
+
+    for point in points:
+        theta_l = 0 #left encoder reading
+        theta_r = 0 #right encoder reading
+        phi = 0 #IMU reading
+        current_pos, _ = calculate_current_position(theta_l, theta_r, phi)
+        subpoints = space_points_linearly(current_pos, point)
+
+        for subpoint in subpoints:
+            theta_l = 0 #left encoder reading
+            theta_r = 0 #right encoder reading
+            phi = 0 #IMU reading
+            current_pos, current_lengths = calculate_current_position(theta_l, theta_r, phi)
+            next_lengths = calculate_next_position(*subpoint, phi)
+            diff_lengths = calculate_position_difference(current_lengths, next_lengths)
+            # MOVE BY LENGTH DIFFERENCE
+
+
+
+
+
+motors = MoveMotors((1,0))
+draw_with_subpoints(motors, 10.0)

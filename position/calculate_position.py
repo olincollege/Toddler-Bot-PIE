@@ -22,7 +22,7 @@ def calculate_current_position(theta_l, theta_r, phi):
         phi (double): Tilt angle, in radians. Positive represents a clockwise tilt.
     
     Returns:
-        (tuple): Tuple of tuples. One has string lengths in mm, the other has the marker coordinates.
+        (tuple): Tuple of tuples. One has the marker coordinates, the other has string lengths, both in mm.
 
     """
     # define constants
@@ -47,66 +47,40 @@ def calculate_current_position(theta_l, theta_r, phi):
     x = x_l + cos(phi + winch_to_marker_angle)*winch_to_marker_dist
     y = y_l - sin(phi + winch_to_marker_angle)*winch_to_marker_dist
 
-    return tuple(s.transpose().tolist()[0]), (x_l, y_l)
+    return (x, y), tuple(s.transpose().tolist()[0])
 
 
-def calculate_next_position(x, y):
+def calculate_next_position(x, y, phi):
     """
-    Uses marker x and y coordinates to calculate string lengths at a future position.
+    Uses marker x and y coordinates to calculate string lengths at a close future position.
 
     Args:
         x (double): Final x position of marker.
 
         y (double): Final y position of marker.
 
+        phi (double): Current tilt angle.
+
     Returns:
         (tuple): Final string lengths, in mm, in a 2-element tuple. Left then right.
     """
 
     # define constants
-    g = g_m * 10**5  # mm/s^2, increased for correction?
-    k = 100  # N/mm
-    m = 0.25  # kg
     w = 157.48  # mm
     h = 40.64  # mm
     x_end = 1829  # mm
-    y_end = 2000  # mm
     winch_to_marker_dist = sqrt(h**2 + w**2/4)  # mm
     winch_to_marker_angle = arctan2(h, w/2)  # rads
 
-    # adjust parameters for error
-    error_params = ()
-    if x > 400:
-        error_params = (-1.43113688e-7,  7.04468937e-5,  1.14384780, -1.01199162e3)
-    else:
-        error_params = (-7.35411458e-7,  8.64530808e-4,  8.22476177e-1, -9.79150503e2)
-    y -= array([error_params[len(error_params)-1-i]*(x**i) for i in range(len(error_params))]).sum()
-
-    # define symbolic position expressions
-    phi = Symbol('phi', real=True)
-    x_l = x - symcos(phi + winch_to_marker_angle)*winch_to_marker_dist
-    y_l = y + symsin(phi + winch_to_marker_angle)*winch_to_marker_dist
-    x_r = x_l + w*symcos(phi)
-    y_r = y_l - w*symsin(phi)
-
-    # define symbolic potential energy expressions
-    PE_x = k*0.5*(x_l**2 + (x_end - x_r)**2)
-    PE_y = k*0.5*((y_l + y_end)**2 + (y_r + y_end)**2) - m*g*(y_l + y_r + 2*y_end)
-    PE_sum = PE_x + PE_y
-
-    # define and find root of derivative of potential energy with respect to phi
-    dPE = diff(PE_sum, phi)
-    tilt = nsolve(dPE, phi, 0)
-
-    # substitute tilt into other position expressions
-    x_l_real = x_l.subs(phi, tilt)
-    x_r_real = x_r.subs(phi, tilt)
-    y_l_real = y_l.subs(phi, tilt)
-    y_r_real = y_r.subs(phi, tilt)
+    # define winch coordinates
+    x_l = x - cos(winch_to_marker_angle + phi)*winch_to_marker_dist
+    y_l = y + sin(winch_to_marker_angle + phi)*winch_to_marker_dist
+    x_r = x + cos(winch_to_marker_angle - phi)*winch_to_marker_dist
+    y_r = y + sin(winch_to_marker_angle - phi)*winch_to_marker_dist
 
     # calculate and return string lengths
-    s_l = sqrt(x_l_real**2 + y_l_real**2)
-    s_r = sqrt((x_end - x_r_real)**2 + y_r_real**2)
+    s_l = sqrt(x_l**2 + y_l**2)
+    s_r = sqrt((x_end - x_r)**2 + y_r**2)
     return s_l, s_r
 
 
@@ -148,7 +122,27 @@ def calculate_position_difference(s_initial, s_final):
     return x_diff, y_diff
 
 
-def split_points_list(dist, length=5.0):
+def space_points_linearly(start, end, spacing=10.0):
+    """
+    space points linearly
+    """
+    total_dist = sqrt((end[0]-start[0])**2 + (end[1] - start[1])**2)
+    angle = arctan2(end[1] - start[1], end[0] - start[0])
+
+
+    diffs = (spacing*cos(angle), spacing*sin(angle))
+    steps = max(int(total_dist // spacing) - 2, 0)
+
+    points = [(start[0] + diffs[0], start[1] + diffs[1])]
+    for i in range(steps):
+        points.append((points[i][0] + diffs[0], points[i][1] + diffs[1]))
+
+    points.append(end)
+
+    return points
+
+
+def split_lengths_list(dist, length=5.0):
     """
     returns list of points with much smaller distances
     """
