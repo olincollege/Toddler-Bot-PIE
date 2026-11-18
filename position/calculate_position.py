@@ -5,7 +5,7 @@ and how to get from one position to the next.
 
 from math import sqrt, sin, cos
 from numpy import arctan2, array
-from numpy.linalg import lstsq, norm
+from numpy.linalg import lstsq
 from scipy.constants import g as g_m
 from sympy import Symbol, diff, nsolve, sin as symsin, cos as symcos
 
@@ -62,8 +62,9 @@ def calculate_next_position(x, y):
     Returns:
         (tuple): Final string lengths, in mm, in a 2-element tuple. Left then right.
     """
+
     # define constants
-    g = g_m * 10**3  # mm/s^2
+    g = g_m * 10**5  # mm/s^2, increased for correction?
     k = 100  # N/mm
     m = 0.25  # kg
     w = 157.48  # mm
@@ -72,6 +73,10 @@ def calculate_next_position(x, y):
     y_end = 2000  # mm
     winch_to_marker_dist = sqrt(h**2 + w**2/4)  # mm
     winch_to_marker_angle = arctan2(h, w/2)  # rads
+
+    # adjust parameters for error
+    error_params = (-1.43113688e-7,  7.04468937e-5,  1.14384780, -1.01199162e3)
+    y -= array([error_params[len(error_params)-1-i]*(x**i) for i in range(len(error_params))]).sum()
 
     # define symbolic position expressions
     phi = Symbol('phi', real=True)
@@ -99,6 +104,27 @@ def calculate_next_position(x, y):
     s_l = sqrt(x_l_real**2 + y_l_real**2)
     s_r = sqrt((x_end - x_r_real)**2 + y_r_real**2)
     return s_l, s_r
+
+
+def calculate_position_from_lengths(s_l, s_r):
+    """
+    Estimates position based on string lengths
+    """
+    # define constant parameters
+    w = 157.48  # mm
+    h = 40.64  # mm
+    x_end = 1829  # mm
+    winch_to_marker_dist = sqrt(h**2 + w**2/4)
+
+    # use side lengths to find sine and cosine
+    sides = (s_l+winch_to_marker_dist, s_r+winch_to_marker_dist, x_end)
+    cos_theta = (sides[0]**2 + sides[2]**2 - sides[1]**2) / (2*sides[0]*sides[2])
+    sin_theta = -sqrt(1 - cos_theta**2)
+
+    # calculate and return x and y coordinates
+    x = sides[0] * cos_theta
+    y = sides[1] * sin_theta
+    return x, y
 
 
 def calculate_position_difference(s_initial, s_final):
