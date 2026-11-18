@@ -52,11 +52,6 @@ def draw_with_subpoints(motors, points, dist):
     """
     draw by linearly spacing points
     """
-
-    subpoints = []
-    for i in range(len(points)-1):
-        subpoints += space_points_linearly(points[i], points[i+1], dist)
-
     for point in points:
         theta_l = 0 #left encoder reading
         theta_r = 0 #right encoder reading
