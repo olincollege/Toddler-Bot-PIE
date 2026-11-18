@@ -75,7 +75,11 @@ def calculate_next_position(x, y):
     winch_to_marker_angle = arctan2(h, w/2)  # rads
 
     # adjust parameters for error
-    error_params = (-1.43113688e-7,  7.04468937e-5,  1.14384780, -1.01199162e3)
+    error_params = ()
+    if x > 400:
+        error_params = (-1.43113688e-7,  7.04468937e-5,  1.14384780, -1.01199162e3)
+    else:
+        error_params = (-7.35411458e-7,  8.64530808e-4,  8.22476177e-1, -9.79150503e2)
     y -= array([error_params[len(error_params)-1-i]*(x**i) for i in range(len(error_params))]).sum()
 
     # define symbolic position expressions

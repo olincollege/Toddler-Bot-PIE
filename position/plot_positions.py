@@ -6,7 +6,7 @@ def plot_y_error():
     """
     plot error on y axis
     """
-    x_range = np.arange(100, 1700, 100)
+    x_range = np.arange(100, 400, 50) # 900 for half, 1700 for full
     y_error = np.zeros(x_range.shape)
     for i in range(x_range.size):
         sum = 0
@@ -14,7 +14,7 @@ def plot_y_error():
             lengths = calculate_next_position(x_range[i], y)
             pos = calculate_position_from_lengths(*lengths)
             sum += pos[1] - y
-        y_error[i] = sum/15
+        y_error[i] = sum/len(range(-2000, -500, 100))
 
     # fit to polynomial
     params = np.polyfit(x_range, y_error, 3)
