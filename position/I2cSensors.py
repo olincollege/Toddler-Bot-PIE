@@ -20,15 +20,15 @@ class Sensors:
         self.imu = LSM6DSO32(i2c)
 
     def IMU(self):
-        accel_x, _, accel_z = self.imu.acceleration
+        accel_x, accel_y, _ = self.imu.acceleration
         tilt = 0.0
         for i in range(100):
-            tilt += arctan2(accel_x, accel_z)
+            tilt += arctan2(-accel_y, -accel_x)
         tilt /= 100.0
         return tilt
     
     def Encoders(self):
         block = self.i2c_bus.read_i2c_block_data(self.ESP32_addr, 0, 4)
         block = self.i2c_bus.read_i2c_block_data(self.ESP32_addr, 0, 4)
-        angle_1, (angle_2 = block[0]*255 + block[1] - 2400)*(2*pi)/2400, (block[2]*255 + block[3] - 2400)*(2*pi)/2400
+        angle_1, angle_2 = (block[0]*255 + block[1] - 2400)*(2*pi)/2400, (block[2]*255 + block[3] - 2400)*(2*pi)/2400
         return angle_1, angle_2
