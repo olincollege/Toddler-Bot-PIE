@@ -4,7 +4,7 @@ and how to get from one position to the next.
 """
 
 from math import sqrt, sin, cos
-from numpy import arctan2, array
+from numpy import array, arctan2
 from numpy.linalg import lstsq
 from scipy.constants import g as g_m
 from sympy import Symbol, diff, nsolve, sin as symsin, cos as symcos
@@ -96,13 +96,27 @@ def calculate_position_from_lengths(s_l, s_r):
 
     # use side lengths to find sine and cosine
     sides = (s_l+winch_to_marker_dist, s_r+winch_to_marker_dist, x_end)
-    cos_theta = (sides[0]**2 + sides[2]**2 - sides[1]**2) / (2*sides[0]*sides[2])
-    sin_theta = -sqrt(1 - cos_theta**2)
 
-    # calculate and return x and y coordinates
-    x = sides[0] * cos_theta
-    y = sides[1] * sin_theta
-    return x, y
+    # find left anchor angle
+    cos_theta1 = (sides[0]**2 + sides[2]**2 - sides[1]**2) / (2*sides[0]*sides[2])
+    sin_theta1 = -sqrt(1 - cos_theta1**2)
+
+    # find right anchor angle
+    cos_theta2 = (sides[1]**2 + sides[2]**2 - sides[0]**2) / (2*sides[1]*sides[2])
+    sin_theta2 = -sqrt(1 - cos_theta2**2)
+
+    # calculate x and y coordinates of marker and winches
+    x = sides[0] * cos_theta1
+    y = sides[0] * sin_theta1
+    x_l = s_l * cos_theta1
+    y_l = s_l * sin_theta1
+    x_r = x_end - s_r * cos_theta2
+    y_r = s_r * sin_theta2
+
+    # calculate tilt angle
+    phi = arctan2(y_l - y_r, x_r - x_l)
+
+    return (x, y), phi
 
 
 def calculate_position_difference(s_initial, s_final):
