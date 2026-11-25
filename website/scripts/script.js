@@ -1,7 +1,7 @@
-makeHeader();
+makeNav();
 
-function makeHeader() {
-    const header = document.querySelector("header");
+function makeNav() {
+    const nav = document.querySelector("nav");
     
     const titles = ["Home", "Mechanical", "Electrical", "Software", "Budget", "BOM"];
     const pages = ["./index.html", "./mechanical.html", "./electrical.html", "./software.html", "./budget.html", "./bom.html"];
@@ -10,6 +10,6 @@ function makeHeader() {
         const anchor = document.createElement("a");
         anchor.innerHTML = titles[i];
         anchor.href = pages[i];
-        header.appendChild(anchor);
+        nav.appendChild(anchor);
     }
 }

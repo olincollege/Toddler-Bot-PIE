@@ -34,5 +34,5 @@ async function loadBOM(grid) {
 
     // write total
     const total = lines[lines.length-1].split(',')[3];
-    document.getElementById("total").innerHTML = `Total spent: ${total}`;
+    document.getElementById("total").innerHTML = `Total Spent: ${total}`;
 }
