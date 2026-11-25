@@ -1,5 +1,5 @@
 const grid = document.querySelector(".grid");
-const tile = loadBOM(grid);
+loadBOM(grid);
 
 async function loadBOM(grid) {
     // load csv
@@ -28,7 +28,8 @@ async function loadBOM(grid) {
             const cell = document.createElement("a");
             cell.classList.add("grid-item")
             cell.innerHTML = row[j];
-            cell.href = row[j+1];
+            if (row[j] !== "n/a")
+                cell.href = row[j+1];
             grid.appendChild(cell);
         }
     }
