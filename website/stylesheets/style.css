@@ -9,3 +9,14 @@ body {
     grid-template-columns: repeat(7, auto);
     width: 60%;
 }
+
+.grid-item {
+    border: solid 1px black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.title {
+    font-weight: bold;
+}
