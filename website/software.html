@@ -4,16 +4,38 @@
         <meta charset="utf-8">
         <title>Toddler Bot</title>
         <link rel="stylesheet" href="./stylesheets/style.css">
+        <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     </head>
 
     <body>
         <nav></nav>
         <h1>Software Design</h1>
-        <h2>Movement</h2>
-        <p>Ben's section</p>
 
         <h2>Image Processing</h2>
-        <p>Maria's section</p>
+        <p class="description">Maria's section</p>
+
+
+        <h2>Movement</h2>
+        
+        <p>[Figure showing robot on whiteboard, with variable names]</p>
+        
+        <p class="description">The Toddler Bot is held by two cables, each one through a stepper motor on an upper corner of the whiteboard. The stepper motors can pull or release the cables, moving the bot around the whiteboard, to a particular position. In order to trace a set of lines, we need to calculate the current lengths of the cables, and the required cable lengths to get to the next position.</p>
+
+        <h3>Localization</h3>
+
+        <p>[Diagram showing sensor positions]</p>
+
+        <p class="description">The Toddler bot itself is equipped with three sensors: an IMU to read the current tilt angle (phi), an encoder to read the current angle of the left cable from the bot (theta_l), and an encoder to read the entire of the right cable from the bot (theta_r). Using the three measurements as well as some constants of the system, we can use a linear system of equations to determine the current tilt angle and cable length.</p>
+
+        <p>\( [Equations] \)</p>
+
+        <h3>Prediction</h3>
+
+        <p class="description">Once we’ve determined the current position, we need to figure out how to get to the next position. To do this, we first need to predict the cable lengths that would put the marker in the specified position. If we didn’t know the tilt angle, we would have to predict it with a minimization problem, which is computationally expensive and not always accurate. However, if the next point is very close to the current point, we can assume that the tilt angle will be very similar to the current tilt angle. Thus, if we space points close to one another, we can use the current tilt angle in our calculation to determine the next cable lengths with consistent accuracy and far less computational expense.</p>
+
+        <p class="description">We can use this assumption to calculate the next cable lengths, and we can use the sensors to estimate the current cable lengths and tilt angle. Then, we can calculate the distance between the current and next string lengths to determine how much of each cable to pull or release. We can give this information to the ESP32s controlling the stepper motors, and the bot will move to the next position. This allows the bot to move around the board, and complete the inputted pattern.</p>
+
+        <p>\( [Equations] \)</p>
 
         <script src="scripts/script.js"></script>
     </body>
